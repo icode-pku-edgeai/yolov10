@@ -1,181 +1,213 @@
-# [YOLOv10: Real-Time End-to-End Object Detection](https://arxiv.org/abs/2405.14458)
-
-
-Official PyTorch implementation of **YOLOv10**.
-
-<p align="center">
-  <img src="figures/latency.svg" width=48%>
-  <img src="figures/params.svg" width=48%> <br>
-  Comparisons with others in terms of latency-accuracy (left) and size-accuracy (right) trade-offs.
-</p>
-
-[YOLOv10: Real-Time End-to-End Object Detection](https://arxiv.org/abs/2405.14458).\
-Ao Wang, Hui Chen, Lihao Liu, Kai Chen, Zijia Lin, Jungong Han, and Guiguang Ding\
-[![arXiv](https://img.shields.io/badge/arXiv-2405.14458-b31b1b.svg)](https://arxiv.org/abs/2405.14458) <a href="https://colab.research.google.com/github/roboflow-ai/notebooks/blob/main/notebooks/train-yolov10-object-detection-on-custom-dataset.ipynb#scrollTo=SaKTSzSWnG7s"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a> [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-blue)](https://huggingface.co/collections/jameslahm/yolov10-665b0d90b0b5bb85129460c2) [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/jameslahm/YOLOv10)  [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/kadirnar/Yolov10)  [![Transformers.js Demo](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Transformers.js-blue)](https://huggingface.co/spaces/Xenova/yolov10-web) [![LearnOpenCV](https://img.shields.io/badge/BlogPost-blue?logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAMAAAC67D%2BPAAAALVBMVEX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F6%2Bfn6%2Bvq3y%2BJ8rOFSne9Jm%2FQcOlr5DJ7GAAAAB3RSTlMAB2LM94H1yMxlvwAAADNJREFUCFtjZGAEAob%2FQMDIyAJl%2FmFkYmEGM%2F%2F%2BYWRmYWYCMv8BmSxYmUgKkLQhGYawAgApySgfFDPqowAAAABJRU5ErkJggg%3D%3D&logoColor=black&labelColor=gray)](https://learnopencv.com/yolov10/) [![Openbayes Demo](https://img.shields.io/static/v1?label=Demo&message=OpenBayes%E8%B4%9D%E5%BC%8F%E8%AE%A1%E7%AE%97&color=green)](https://openbayes.com/console/public/tutorials/im29uYrnIoz) 
-
-
-<details>
-  <summary>
-  <font size="+1">Abstract</font>
-  </summary>
-Over the past years, YOLOs have emerged as the predominant paradigm in the field of real-time object detection owing to their effective balance between computational cost and detection performance. Researchers have explored the architectural designs, optimization objectives, data augmentation strategies, and others for YOLOs, achieving notable progress. However, the reliance on the non-maximum suppression (NMS) for post-processing hampers the end-to-end deployment of YOLOs and adversely impacts the inference latency. Besides, the design of various components in YOLOs lacks the comprehensive and thorough inspection, resulting in noticeable computational redundancy and limiting the model's capability. It renders the suboptimal efficiency, along with considerable potential for performance improvements. In this work, we aim to further advance the performance-efficiency boundary of YOLOs from both the post-processing and the model architecture. To this end, we first present the consistent dual assignments for NMS-free training of YOLOs, which brings the competitive performance and low inference latency simultaneously. Moreover, we introduce the holistic efficiency-accuracy driven model design strategy for YOLOs. We comprehensively optimize various components of YOLOs from both the efficiency and accuracy perspectives, which greatly reduces the computational overhead and enhances the capability. The outcome of our effort is a new generation of YOLO series for real-time end-to-end object detection, dubbed YOLOv10. Extensive experiments show that YOLOv10 achieves the state-of-the-art performance and efficiency across various model scales. For example, our YOLOv10-S is 1.8$\times$ faster than RT-DETR-R18 under the similar AP on COCO, meanwhile enjoying 2.8$\times$ smaller number of parameters and FLOPs. Compared with YOLOv9-C, YOLOv10-B has 46\% less latency and 25\% fewer parameters for the same performance.
-</details>
-
-## Notes
-- 2024/05/31: Please use the [exported format](https://github.com/THU-MIG/yolov10?tab=readme-ov-file#export) for benchmark. In the non-exported format, e.g., pytorch, the speed of YOLOv10 is biased because the unnecessary `cv2` and `cv3` operations in the `v10Detect` are executed during inference.
-- 2024/05/30: We provide [some clarifications and suggestions](https://github.com/THU-MIG/yolov10/issues/136) for detecting smaller objects or objects in the distance with YOLOv10. Thanks to [SkalskiP](https://github.com/SkalskiP)!
-- 2024/05/27: We have updated the [checkpoints](https://huggingface.co/collections/jameslahm/yolov10-665b0d90b0b5bb85129460c2) with class names, for ease of use.
-
-## UPDATES 🔥
-- 2024/06/01: Thanks to [ErlanggaYudiPradana](https://github.com/rlggyp) for the integration with [C++ | OpenVINO | OpenCV](https://github.com/rlggyp/YOLOv10-OpenVINO-CPP-Inference)
-- 2024/06/01: Thanks to [NielsRogge](https://github.com/NielsRogge) and [AK](https://x.com/_akhaliq) for hosting the models on the HuggingFace Hub!
-- 2024/05/31: Build [yolov10-jetson](https://github.com/Seeed-Projects/jetson-examples/blob/main/reComputer/scripts/yolov10/README.md) docker image by [youjiang](https://github.com/yuyoujiang)!
-- 2024/05/31: Thanks to [mohamedsamirx](https://github.com/mohamedsamirx) for the integration with [BoTSORT, DeepOCSORT, OCSORT, HybridSORT, ByteTrack, StrongSORT using BoxMOT library](https://colab.research.google.com/drive/1-QV2TNfqaMsh14w5VxieEyanugVBG14V?usp=sharing)!
-- 2024/05/31: Thanks to [kaylorchen](https://github.com/kaylorchen) for the integration with [rk3588](https://github.com/kaylorchen/rk3588-yolo-demo)!
-- 2024/05/30: Thanks to [eaidova](https://github.com/eaidova) for the integration with [OpenVINO™](https://github.com/openvinotoolkit/openvino_notebooks/blob/0ba3c0211bcd49aa860369feddffdf7273a73c64/notebooks/yolov10-optimization/yolov10-optimization.ipynb)!
-- 2024/05/29: Add the gradio demo for running the models locally. Thanks to [AK](https://x.com/_akhaliq)!
-- 2024/05/27: Thanks to [sujanshresstha](sujanshresstha) for the integration with [DeepSORT](https://github.com/sujanshresstha/YOLOv10_DeepSORT.git)!
-- 2024/05/26: Thanks to [CVHub520](https://github.com/CVHub520) for the integration into [X-AnyLabeling](https://github.com/CVHub520/X-AnyLabeling)!
-- 2024/05/26: Thanks to [DanielSarmiento04](https://github.com/DanielSarmiento04) for integrate in [c++ | ONNX | OPENCV](https://github.com/DanielSarmiento04/yolov10cpp)!
-- 2024/05/25: Add [Transformers.js demo](https://huggingface.co/spaces/Xenova/yolov10-web) and onnx weights(yolov10[n](https://huggingface.co/onnx-community/yolov10n)/[s](https://huggingface.co/onnx-community/yolov10s)/[m](https://huggingface.co/onnx-community/yolov10m)/[b](https://huggingface.co/onnx-community/yolov10b)/[l](https://huggingface.co/onnx-community/yolov10l)/[x](https://huggingface.co/onnx-community/yolov10x)). Thanks to [xenova](https://github.com/xenova)!
-- 2024/05/25: Add [colab demo](https://colab.research.google.com/github/roboflow-ai/notebooks/blob/main/notebooks/train-yolov10-object-detection-on-custom-dataset.ipynb#scrollTo=SaKTSzSWnG7s), [HuggingFace Demo](https://huggingface.co/spaces/kadirnar/Yolov10), and [HuggingFace Model Page](https://huggingface.co/kadirnar/Yolov10). Thanks to [SkalskiP](https://github.com/SkalskiP) and [kadirnar](https://github.com/kadirnar)! 
-
-## Performance
-COCO
-
-| Model | Test Size | #Params | FLOPs | AP<sup>val</sup> | Latency |
-|:---------------|:----:|:---:|:--:|:--:|:--:|
-| [YOLOv10-N](https://huggingface.co/jameslahm/yolov10n) |   640  |     2.3M    |   6.7G   |     38.5%     | 1.84ms |
-| [YOLOv10-S](https://huggingface.co/jameslahm/yolov10s) |   640  |     7.2M    |   21.6G  |     46.3%     | 2.49ms |
-| [YOLOv10-M](https://huggingface.co/jameslahm/yolov10m) |   640  |     15.4M   |   59.1G  |     51.1%     | 4.74ms |
-| [YOLOv10-B](https://huggingface.co/jameslahm/yolov10b) |   640  |     19.1M   |  92.0G |     52.5%     | 5.74ms |
-| [YOLOv10-L](https://huggingface.co/jameslahm/yolov10l) |   640  |     24.4M   |  120.3G   |     53.2%     | 7.28ms |
-| [YOLOv10-X](https://huggingface.co/jameslahm/yolov10x) |   640  |     29.5M    |   160.4G   |     54.4%     | 10.70ms |
-
-## Installation
-`conda` virtual environment is recommended. 
+# 训练相关基本操作
+## 环境
++ python
++ torch
++ yolov10是基于yolov8开发的，已经集成到了ultralytics库最新版本中了
++ 官方仍旧推荐将yolov10可编辑安装到ultralytics里面去
 ```
-conda create -n yolov10 python=3.9
-conda activate yolov10
-pip install -r requirements.txt
+pip install ultralytics
 pip install -e .
 ```
-## Demo
+## 数据集
++ 数据格式，和yolov5相同
 ```
-python app.py
-# Please visit http://127.0.0.1:7860
+├── images
+│   ├── train
+│   └── val
+└── labels
+    ├── train
+    └── val
+
+```
+## 命令行执行，和yolov8一模一样，唯一区别就是可以调用v10的yaml和pt
++ 详细内容参见default.yaml
+```
+yolo task=detect mode=train model=yolov8x.yaml data=mydata.yaml epochs=1000 batch=16
+```
++ task:目标检测detect、分割segment、分类classify等等
++ mode：训练train、验证val、预测predict
++ model:模型配置yaml文件或者加载pt权重文件
++ pretrained:或者可以设置model为yaml文件，然后pretrained为pt文件进行自适应的部分迁移学习
++ data：数据集yaml
++ epochs:迭代次数
++ batch：视显存大小而定
++ imgsz：图片尺度
++ device：gpu设备
++ optimizer：优化器，默认sgd,可选adam等等
++ source:想要推理的目录，可以是图片、视频、文件夹、屏幕、摄像头
++ patience：早停机制
++ workers：0肯定可以，其他数值请自行尝试
++ resume：断点存续
++ iou:iou阈值
++ conf:置信度阈值
++ half：fp16推理
++ max_det：最大检测数
++ format:导出格式，默认torchscript，可选onnx、engine等
++ dynamic:动态导出
++ simplify：简化
++ opset：onnx版本
+## 代码执行，和yolov8的唯一区别就是import YOLOv10
++ 训练
+```
+from ultralytics import YOLO
+
+# Load a model
+model = YOLO('yolov8n.yaml')  # 从YAML中构建一个新模型
+model = YOLO('yolov8n.pt')  #加载预训练的模型(推荐用于训练)
+model = YOLO('yolov8n.yaml').load('yolov8n.pt')  # 从YAML构建并传递权重
+
+# Train the model
+model.train(data='coco128.yaml', epochs=100, imgsz=640)
+
+
+```
++ 验证
+```
+from ultralytics import YOLO
+
+# Load a model
+model = YOLO('yolov8n.pt')  #加载官方模型
+model = YOLO('path/to/best.pt')  # 加载自己训练的模型
+
+# Validate the model
+metrics = model.val()  # no arguments needed, dataset and settings remembered
+metrics.box.map    # map50-95
+metrics.box.map50  # map50
+metrics.box.map75  # map75
+metrics.box.maps   # a list contains map50-95 of each category
+
+```
++ 推理
+```
+from ultralytics import YOLO
+
+# Load a model
+model = YOLO('yolov8n.pt')  # load an official model
+model = YOLO('path/to/best.pt')  # load a custom model
+
+# Predict with the model
+results = model('https://ultralytics.com/images/bus.jpg')  # predict on an image
+
+# 目标检测后处理
+boxes = results[0].boxes
+boxes.xyxy  # box with xyxy format, (N, 4)
+boxes.xywh  # box with xywh format, (N, 4)
+boxes.xyxyn  # box with xyxy format but normalized, (N, 4)
+boxes.xywhn  # box with xywh format but normalized, (N, 4)
+boxes.conf  # confidence score, (N, 1)
+boxes.cls  # cls, (N, 1)
+boxes.data  # raw bboxes tensor, (N, 6) or boxes.boxes .
+
+# 实例分割后处理
+masks = results[0].masks  # Masks object
+masks.segments  # bounding coordinates of masks, List[segment] * N
+masks.data  # raw masks tensor, (N, H, W) or masks.masks 
+
+# 目标分类后处理
+results = model(inputs)
+results[0].probs  # cls prob, (num_class, )
+
+
 ```
 
-## Validation
-[`yolov10n`](https://huggingface.co/jameslahm/yolov10n)  [`yolov10s`](https://huggingface.co/jameslahm/yolov10s)  [`yolov10m`](https://huggingface.co/jameslahm/yolov10m)  [`yolov10b`](https://huggingface.co/jameslahm/yolov10b)  [`yolov10l`](https://huggingface.co/jameslahm/yolov10l)  [`yolov10x`](https://huggingface.co/jameslahm/yolov10x)  
++ 导出
 ```
-yolo val model=jameslahm/yolov10{n/s/m/b/l/x} data=coco.yaml batch=256
+from ultralytics import YOLO
+
+# Load a model
+model = YOLO('yolov8n.pt')  # load an official model
+model = YOLO('path/to/best.pt')  # load a custom trained
+
+# Export the model
+model.export(format='onnx')
+
 ```
-
-Or
-```python
-from ultralytics import YOLOv10
-
-model = YOLOv10.from_pretrained('jameslahm/yolov10{n/s/m/b/l/x}')
-# or
-# wget https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10{n/s/m/b/l/x}.pt
-model = YOLOv10('yolov10{n/s/m/b/l/x}.pt')
-
-model.val(data='coco.yaml', batch=256)
++ 跟踪
 ```
+from ultralytics import YOLO
+
+# Load a model
+model = YOLO('yolov8n.pt')  # load an official detection model
+model = YOLO('yolov8n-seg.pt')  # load an official segmentation model
+model = YOLO('path/to/best.pt')  # load a custom model
+
+# Track with the model
+results = model.track(source="https://youtu.be/Zgi9g1ksQHc", show=True) 
+results = model.track(source="https://youtu.be/Zgi9g1ksQHc", show=True, tracker="bytetrack.yaml") 
 
 
-## Training 
 ```
-yolo detect train data=coco.yaml model=yolov10n/s/m/b/l/x.yaml epochs=500 batch=256 imgsz=640 device=0,1,2,3,4,5,6,7
++ 基准
 ```
+from ultralytics.yolo.utils.benchmarks import benchmark
 
-Or
-```python
-from ultralytics import YOLOv10
+# Benchmark
+benchmark(model='yolov8n.pt', imgsz=640, half=False, device=0)
 
-model = YOLOv10()
-# If you want to finetune the model with pretrained weights, you could load the 
-# pretrained weights like below
-# model = YOLOv10.from_pretrained('jameslahm/yolov10{n/s/m/b/l/x}')
-# or
-# wget https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10{n/s/m/b/l/x}.pt
-# model = YOLOv10('yolov10{n/s/m/b/l/x}.pt')
-
-model.train(data='coco.yaml', epochs=500, batch=256, imgsz=640)
 ```
-
-## Push to hub to 🤗
-
-Optionally, you can push your fine-tuned model to the [Hugging Face hub](https://huggingface.co/) as a public or private model:
-
-```python
-# let's say you have fine-tuned a model for crop detection
-model.push_to_hub("<your-hf-username-or-organization/yolov10-finetuned-crop-detection")
-
-# you can also pass `private=True` if you don't want everyone to see your model
-model.push_to_hub("<your-hf-username-or-organization/yolov10-finetuned-crop-detection", private=True)
-```
-
-## Prediction
-Note that a smaller confidence threshold can be set to detect smaller objects or objects in the distance. Please refer to [here](https://github.com/THU-MIG/yolov10/issues/136) for details.
-```
-yolo predict model=jameslahm/yolov10{n/s/m/b/l/x}
-```
-
-Or
-```python
-from ultralytics import YOLOv10
-
-model = YOLOv10.from_pretrained('jameslahm/yolov10{n/s/m/b/l/x}')
-# or
-# wget https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10{n/s/m/b/l/x}.pt
-model = YOLOv10('yolov10{n/s/m/b/l/x}.pt')
-
-model.predict()
-```
-
-## Export
-```
-# End-to-End ONNX
-yolo export model=jameslahm/yolov10{n/s/m/b/l/x} format=onnx opset=13 simplify
-# Predict with ONNX
-yolo predict model=yolov10n/s/m/b/l/x.onnx
-
-# End-to-End TensorRT
-yolo export model=jameslahm/yolov10{n/s/m/b/l/x} format=engine half=True simplify opset=13 workspace=16
-# or
-trtexec --onnx=yolov10n/s/m/b/l/x.onnx --saveEngine=yolov10n/s/m/b/l/x.engine --fp16
-# Predict with TensorRT
-yolo predict model=yolov10n/s/m/b/l/x.engine
-```
-
-Or
-```python
-from ultralytics import YOLOv10
-
-model = YOLOv10.from_pretrained('jameslahm/yolov10{n/s/m/b/l/x}')
-# or
-# wget https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10{n/s/m/b/l/x}.pt
-model = YOLOv10('yolov10{n/s/m/b/l/x}.pt')
-
-model.export(...)
-```
-
-## Acknowledgement
-
-The code base is built with [ultralytics](https://github.com/ultralytics/ultralytics) and [RT-DETR](https://github.com/lyuwenyu/RT-DETR).
-
-Thanks for the great implementations! 
-
-## Citation
-
-If our code or models help your work, please cite our paper:
-```BibTeX
-@article{wang2024yolov10,
-  title={YOLOv10: Real-Time End-to-End Object Detection},
-  author={Wang, Ao and Chen, Hui and Liu, Lihao and Chen, Kai and Lin, Zijia and Han, Jungong and Ding, Guiguang},
-  journal={arXiv preprint arXiv:2405.14458},
-  year={2024}
-}
-```
+# 代码基础介绍，和yolov8基本一致
+## docker各类硬件的docker file
+## docs 文档
+## examples 各种推理框架案例
+## logs 提供了yolov10的训练日志
+## tests 各种测试代码
+## ultralytics核心代码
+### cfg存放yaml文件
++ datasets各种数据集yaml
++ models各类目标检测模型v3-v10以及rt-detr
++ trackers跟踪类算法botsort和bytetrack
++ default.yaml超参表
+### data数据相关代码，数据增强，数据加载等等
+### engine模型相关代码
+### hub 模型托管平台
+### models各类模型调用
+#### fastsam和sam:segment anything model
+#### nas:neural architecture search
+#### rtdetr和utils工具
+#### yolo
++ classify分类
++ detect检测
++ obb有向边界框
++ pose姿态检测
++ segment分割
++ world词汇对象检测
++ model.py 父类模型，调用上述子类对象
+#### yolov10 v10的所有调用都在这个文件夹
++ model.py 父类模型，调用上述子类对象
++ predict.py检测代码
++ train.py训练代码
++ val.py验证代码
+### nn神经网络
+#### modules模块
++ block.py子模块，例如C1、C2、C3、C2F、ELAN、RepVGG、bottleneck等等
++ conv.py各种卷积，例如conv、dwconv、ghostconv、cbam、concat等等
++ head.py各种检测头，对应models里面的分类、检测、分割、姿态检测、有向边界框、rtdetr、v10检测头，核心代码在v10Detect中
++ transformer.py各种transformer类的模块
++ utils.py工具
+#### autobackend.py推理时动态后端选择
+#### tasks.py 
++ 从模型yaml文件中解析组成模型
++ 所有新增的module都需要import，并在parse_model函数中适时调用
+### solutions 附属功能的解决方案
+### trackers 跟踪实现的代码
++ bot_sort和byte_tracker实现，详细参考文件夹内readme
+### utils各类工具
++ autobatch.py:自动batch工具
++ benchmarks.py:多平台对比工具
++ checks.py:检测工具
++ dist.py downloads.py:下载工具
++ errors.py:报错工具
++ files.py:文件工具
++ instance.py：实例对象
++ loss.py：损失函数
++ metrics.py:评价指标
++ ops.py运营工具，例如nms、xyxy2xywh之类的
++ patches.py补丁工具
++ plotting.py绘图工具
++ tal.py 任务对齐学习Task Alignment Learning
++ torch_utils.py torch工具
++ triton.py triton推理工具
++ tuner.py 超参调优工具
+# 核心改进点
++ 无nms，从yolov5的anchor base，到yolov8的anchor free,预测的框减少，但仍需nms，yolov10引入一个一对多和一对一双头训练，一对一单头预测，彻底摆脱nms，本质上是掉点的
++ 轻量分类头、改进下采样、秩引导块设计、大核卷积、部分注意力机制，本质上都是在弥补多头的精度和速度的不足
